@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, List, Dict, Union
 import asyncio
 
 class Debugger:
@@ -69,7 +69,7 @@ class guard(Fn):
   pass
 
 class Transition:
-  def __init__(self, from_: str, to: str, guards: list[guard], reducers: list[reduce]):
+  def __init__(self, from_: str, to: str, guards: List[guard], reducers: List[reduce]):
     self.from_ = from_
     self.to = to
     self.guards = guards
@@ -97,7 +97,7 @@ def immediate(*args):
   return makeTransition(Immediate, None, *args)
 
 class State:
-  def __init__(self, enter: Callable = identity, transitions: dict[str,list[Transition]] = {}, final: bool = False, immediates: list[Immediate] = []):
+  def __init__(self, enter: Callable = identity, transitions: Dict[str,List[Transition]] = {}, final: bool = False, immediates: List[Immediate] = []):
     self.enter = enter
     self.transitions = transitions
     self.final = final
@@ -119,7 +119,7 @@ class MachineDef:
     self.value = value
 
 class Machine:
-  def __init__(self, current: str, states: list[State], context: Callable, original: dict = None):
+  def __init__(self, current: str, states: List[State], context: Callable, original: dict = None):
     self.current = current
     self.states = states
     self.context = context
@@ -129,7 +129,7 @@ class Machine:
   def state(self):
     return MachineDef(self.current, self.states[self.current])
     
-def createMachine(current: str | dict, states: dict | Callable = None, contextFn: Callable = empty):
+def createMachine(current: Union[str,Dict], states: Union[Dict[str, State],Callable] = None, contextFn: Callable = empty):
   if type(current) is not str:
     contextFn = states or empty
     states = current
@@ -141,7 +141,7 @@ def createMachine(current: str | dict, states: dict | Callable = None, contextFn
                  context=contextFn)
 
 class Service:
-  def __init__(self, machine: Machine, context: dict, onChange: Callable, child = None):
+  def __init__(self, machine: Machine, context: Dict, onChange: Callable, child = None):
     self.machine = machine
     self.context = context
     self.onChange = onChange
@@ -185,7 +185,7 @@ def send(service:Service, event):
   return machine
 
 
-def transitionToMap(transitions: list[Transition]) -> dict[Transition]:
+def transitionToMap(transitions: List[Transition]) -> Dict[str,Transition]:
   m = dict()
   for t in transitions:
     if not t.from_ in m:
@@ -266,7 +266,7 @@ def invoke(fn, *transitions):
       transitions=t
     )
 
-def transitionTo(service: Service, machine: Machine, fromEvent, candidates: list[Transition]):
+def transitionTo(service: Service, machine: Machine, fromEvent, candidates: List[Transition]):
   context = service.context
   for c in candidates:
     if c.guards(service.context, fromEvent):

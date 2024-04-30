@@ -11,5 +11,6 @@ def onEnter(machine, to, state, prevState, event):
         print('Event '+ event)
     else:
         print('Event', event)
+    print("---End details---")
 
 d._onEnter = onEnter

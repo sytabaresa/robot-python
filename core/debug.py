@@ -1,22 +1,23 @@
+from typing import Dict
+
 from .machine import d, InvokeFn, State
 
 def unknownState(from_, state):
     raise Exception('Cannot transition from '+from_+' to unknown state: '+state)
 
-def create(current: str, states: dict[str,State]):
+def create(current: str, states: Dict[str,State]):
     # print(current, states)
     if current not in states:
         raise Exception('Initial state ['+current+'] is not a known state')
     for p in states:
         state = states[p]
-        # print(state.transitions)
         for candidates in state.transitions.values():
             for c in candidates:
                 if c.to not in states:
                     unknownState(p,c.to)
         if isinstance(state, InvokeFn):
             hasErrorFrom = False
-            for a, candidates in state.transitions:
+            for candidates in state.transitions.values():
                 for c in candidates:
                     if c.from_ == 'error':
                         hasErrorFrom = True
