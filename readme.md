@@ -1,4 +1,4 @@
-# Robot-python
+# robot-python
 
 <p align="center">
   <img 
@@ -8,16 +8,15 @@
   />
 </p>
 
-A small functional zero-dependency and immutable Finite State Machine library implemented in Python. Using state machines for your components brings the declarative programming approach to application state.
+A small, blazing fast, functional zero-dependency and immutable Finite State Machine (StateCharts) library implemented in Python. Using state machines for your components brings the declarative programming approach to application state.
 
-**This is a python port of the popular JavaScript library [robot](https://thisrobot.life/)** with nearly identical API, still in testing and optimization and with emphasis in MicroPython support.
-
+**This is a python port of the popular JavaScript library [robot](https://thisrobot.life/)** with nearly identical API, still in optimization and with emphasis in general Python and MicroPython support.
 Tasks:
-- [x] Python port, tested in python 3.6 as minimal version, older versions may don't work because ordered dicts requirement (see below for a workaround)
+- [x] Python port, tested in MicroPython and python 3.6 as minimal version, older versions may don't work because ordered dicts requirement (see below for a workaround)
 - [x] Same tests of JavaScript ported 
 - [x] Test passed
-- [x] MicroPython support (RP2040 tested)
-- [x] Used in a DIY Raspberry Pi pico project for a energy meter for a business :wink:
+- [x] MicroPython support (RP2040 and Unix platform tested)
+- [x] Used in a DIY Raspberry Pi Pico W project for a energy meter for a business :wink:
 - [ ] Extensive documentation (meanwhile check [oficial robot documentation](https://thisrobot.life/), has the same API)
 - [ ] General optimizations
 - [ ] [MicroPython optimizations](https://docs.micropython.org/en/latest/reference/speed_python.html#the-native-code-emitter)
@@ -27,14 +26,39 @@ Tasks:
 - [ ] ...
 
 See [thisrobot.life](https://thisrobot.life/) for documentation, but take in account that is in JavaScript. 
+
+## Why Finite State Machines / StateCharts?
+It is a robust paradigm for general purpose programming, but also recommended for high availability, performance and modeling sw/hw applications, is in use in so many applications such as software, embedded applications, hardware, electronics and many things that keep us alive. 
+From an 8-bit microcontroller to a large application, the use of FSM/StateCharts can be useful to understand, model (and implement) solutions for complex logic and interactions environments. 
+
+
+Historically StateCharts were associated with a Graphical Modeling, but StateCharts don't limit to modeling and fancy drawings, libraries like this can be used to implement fsm/statechart as it in code! Even you don’t need to draw something when you can start to program a FSM (see examples).
+
+If only the [Apollo 11 assembler programmers](https://github.com/chrislgarry/Apollo-11) (1969) had known this [paradigm](https://www.inf.ed.ac.uk/teaching/courses/seoc/2005_2006/resources/statecharts.pdf) (1984) before designing their electronic and user interface systems :smiling_face_with_tear:	
+
+### Useful resources
+
+- [Welcome to the world of StateCharts](https://statecharts.dev/)
+- Highly recommended conference (UI conference, but the explanations can be applied in general): [State of the Art Web User Interfaces with State Machines - David Khourshid](https://www.youtube.com/watch?v=OVS9cKNK00U) and his [slides](https://slides.com/davidkhourshid/statecharts-fsf)
+- Another conference from the same author, I like the analogy of Pacman: [David Khourshid - Infinitely Better UIs with Finite Automata](https://www.youtube.com/watch?v=VU1NKX6Qkxc) and his [slides](https://slides.com/davidkhourshid/finite-state-machines)
+- Wikipedia article about [StateCharts](https://en.wikipedia.org/wiki/State_diagram) and [FSMs](https://en.wikipedia.org/wiki/Finite-state_machine#Mathematical_model) (Mathematical Model)
+- Original paper: [STATECHARTS: A VISUAL FORMALISM FOR COMPLEX SYSTEMS](https://www.inf.ed.ac.uk/teaching/courses/seoc/2005_2006/resources/statecharts.pdf)
+- [StateChart Autocoding for Curiosity Rover](https://blog.nomagic.com/statechart-autocoding-curiosity-rover/)
+- Spanish conference: [This is how Apollo 11 was programmed in 1969](https://www.youtube.com/watch?v=tP0XQYC4rjI) about curiosities and complexities of Apollo 11 (and its errors), English subtitles with auto CC  
+- [Apollo Guidance Computer (AGC)](https://www.ibiblio.org/apollo/#gsc.tab=0) and [github code](https://github.com/chrislgarry/Apollo-11), will be interesting if all AGC can be programmed in StateCharts :stuck_out_tongue:
+
+# Changes from original library
+
 The API is nearly the same of the JS library, with some changes/gotchas:
-- JS objects were replaced with Python dictionaries
-- Some helpers were implemented as classes, more robust in type cheking and with exact API that JS functions
+- JS objects are replaced with Python equivalents: 
+    - state definitions need to be dictionaries or objects with _ __getitem__ _ method
+    - events can be strings (equal as in the original library), objects with property _type_, dictionaries or objects with _ __getitem__ _ method and _type_ key
+    - context doesn't has restrictions.
+- Some helpers were implemented as classes, more robust in type checking and with exact API that JS functions
 - JS Promises are implemented with async/await Python feature
 - Debug and logging helpers work as expected importing them
 - In MicroPython, you need to install [typing stub package](https://micropython-stubs.readthedocs.io/en/stable/_typing_mpy.html) to support type annotations (zero runtime overhead)
-- In MicroPython or python version prior 3.6, you must provide initialState (first argument) when creating a machine with _createMachine_, because un-ordered dicts doesn't guarantee deduction of first state as initialState.
-- ...
+- In MicroPython or python version prior 3.6, you must provide initialState (first argument) in _createMachine_, because un-ordered dicts doesn't guarantee deduction of first state as initialState.
 
 ## Examples
 
@@ -42,7 +66,7 @@ Minimal example:
 ```python
 from robot import createMachine, state, transition, interpret
 
-machine = createMachine({
+machine = createMachine('off', {
     'off': state(
         transition('toggle', 'on')
     ),

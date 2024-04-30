@@ -176,10 +176,10 @@ def interpret(machine: Machine, onChange: Callable, initialContext: Dict = {}, e
 
 
 def send(service: Service, event):
-    if type(event) is dict and 'type' in event:
-        eventName = event['type']
-    elif hasattr(event, 'type'):
+    if hasattr(event, 'type'):
         eventName = event.type
+    elif hasattr(event, '__getitem__'):
+        eventName = event['type']
     else:
         eventName = event
     machine = service.machine
