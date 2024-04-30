@@ -8,16 +8,16 @@
   />
 </p>
 
-A small functional and immutable Finite State Machine library implemented in Python. Using state machines for your components brings the declarative programming approach to application state.
+A small functional zero-dependency and immutable Finite State Machine library implemented in Python. Using state machines for your components brings the declarative programming approach to application state.
 
 **This is a python port of the popular JavaScript library [robot](https://thisrobot.life/)** with nearly identical API, still in testing and optimization and with emphasis in MicroPython support.
 
 Tasks:
-- [x] Python port (tested in python 3.6 as minimal version)
+- [x] Python port, tested in python 3.6 as minimal version, older versions may don't work because ordered dicts requirement (see below for a workaround)
 - [x] Same tests of JavaScript ported 
 - [x] Test passed
 - [x] MicroPython support (RP2040 tested)
-- [x] Used in a DIY project for a energy meter for a business with a Raspberry Pi pico W ;)
+- [x] Used in a DIY Raspberry Pi pico project for a energy meter for a business :wink:
 - [ ] Extensive documentation (meanwhile check [oficial robot documentation](https://thisrobot.life/), has the same API)
 - [ ] General optimizations
 - [ ] [MicroPython optimizations](https://docs.micropython.org/en/latest/reference/speed_python.html#the-native-code-emitter)
@@ -27,12 +27,13 @@ Tasks:
 - [ ] ...
 
 See [thisrobot.life](https://thisrobot.life/) for documentation, but take in account that is in JavaScript. 
-The API is nearly the same of the JS library, with some changes:
+The API is nearly the same of the JS library, with some changes/gotchas:
 - JS objects were replaced with Python dictionaries
 - Some helpers were implemented as classes, more robust in type cheking and with exact API that JS functions
 - JS Promises are implemented with async/await Python feature
 - Debug and logging helpers work as expected importing them
-- In MicroPyhton, you need to install [typing stub](https://micropython-stubs.readthedocs.io/en/stable/_typing_mpy.html) to support type annotations (zero runtime overhead)
+- In MicroPython, you need to install [typing stub package](https://micropython-stubs.readthedocs.io/en/stable/_typing_mpy.html) to support type annotations (zero runtime overhead)
+- In MicroPython or python version prior 3.6, you must provide initialState (first argument) when creating a machine with _createMachine_, because un-ordered dicts doesn't guarantee deduction of first state as initialState.
 - ...
 
 ## Examples
@@ -64,20 +65,19 @@ import robot.logging
 
 
 def titleIsValid(ctx, ev):
-    return len(ctx.title) > 5
+    return len(ctx['title']) > 5
 
 
 async def saveTitle():
     id = await do_db_stuff()
     return id
 
-childMachine = createMachine({
-    # ...
-    'idle': state(transition('toggle', 'end', action(lambda : print('in child machine!')))),
+childMachine = createMachine('idle', {
+    'idle': state(transition('toggle', 'end', action(lambda: print('in child machine!')))),
     'end': final()
 })
 
-machine = createMachine({
+machine = createMachine('preview', {
     'preview': state(
         transition('edit', 'editMode',
                    # Save the current title as oldTitle so we can reset later.
@@ -103,11 +103,12 @@ machine = createMachine({
         # Check if the title is valid. If so go
         # to the save state, otherwise go back to editMode
         immediate('save', guard(titleIsValid), action(
-            lambda ctx: print(ctx.title, ' is in validation'))),
+            lambda ctx: print(ctx['title'], ' is in validation'))),
         immediate('editMode')
     ),
     'save': invoke(saveTitle,
-                   transition('done', 'preview', action(lambda: print('side effect action'))),
+                   transition('done', 'preview', action(
+                       lambda: print('side effect action'))),
                    transition('error', 'error')
                    ),
     'child': invoke(childMachine,
@@ -118,10 +119,13 @@ machine = createMachine({
     )
 }, lambda ctx: {'title': 'example title'})
 
+
 def service_log(service: Service):
     print('send event! current state: ', service.machine.current)
-    
+
+
 service = interpret(machine, service_log)
+print(service.machine.current)
 service.send('edit')
 service.send('child')
 service.child.send('toggle')

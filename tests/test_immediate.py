@@ -1,6 +1,7 @@
 import unittest
 
-from core.machine import createMachine, state, transition, immediate, interpret
+from core import createMachine, state, transition, immediate, interpret
+
 
 class TestImmediate(unittest.TestCase):
 
@@ -18,9 +19,10 @@ class TestImmediate(unittest.TestCase):
             'three': state()
         })
 
-        service = interpret(machine, lambda : {})
+        service = interpret(machine, lambda: {})
         service.send('ping')
         self.assertEqual(service.machine.current, 'three')
-        
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -4,20 +4,19 @@ import core.logging
 
 
 def titleIsValid(ctx, ev):
-    return len(ctx.title) > 5
+    return len(ctx['title']) > 5
 
 
 async def saveTitle():
     id = await do_db_stuff()
     return id
 
-childMachine = createMachine({
-    # ...
-    'idle': state(transition('toggle', 'end', action(lambda : print('in child machine!')))),
+childMachine = createMachine('idle', {
+    'idle': state(transition('toggle', 'end', action(lambda: print('in child machine!')))),
     'end': final()
 })
 
-machine = createMachine({
+machine = createMachine('preview', {
     'preview': state(
         transition('edit', 'editMode',
                    # Save the current title as oldTitle so we can reset later.
@@ -43,11 +42,12 @@ machine = createMachine({
         # Check if the title is valid. If so go
         # to the save state, otherwise go back to editMode
         immediate('save', guard(titleIsValid), action(
-            lambda ctx: print(ctx.title, ' is in validation'))),
+            lambda ctx: print(ctx['title'], ' is in validation'))),
         immediate('editMode')
     ),
     'save': invoke(saveTitle,
-                   transition('done', 'preview', action(lambda: print('side effect action'))),
+                   transition('done', 'preview', action(
+                       lambda: print('side effect action'))),
                    transition('error', 'error')
                    ),
     'child': invoke(childMachine,
@@ -58,10 +58,13 @@ machine = createMachine({
     )
 }, lambda ctx: {'title': 'example title'})
 
+
 def service_log(service: Service):
     print('send event! current state: ', service.machine.current)
-    
+
+
 service = interpret(machine, service_log)
+print(service.machine.current)
 service.send('edit')
 service.send('child')
 service.child.send('toggle')
