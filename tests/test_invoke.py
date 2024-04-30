@@ -31,6 +31,7 @@ class TestInvokeAsync(unittest.TestCase):
         service = interpret(machine, lambda : {})
         service.send('click')
         self.loop.run_until_complete(self.dummy)
+        await asyncio.sleep(1)
         self.assertEqual(service.machine.current, 'three', 'now in the next state')
         self.assertEqual(service.context['age'], 13, 'Invoked')
         
@@ -53,6 +54,7 @@ class TestInvokeAsync(unittest.TestCase):
         service = interpret(machine, lambda : {})
         service.send('click')
         self.loop.run_until_complete(self.dummy)
+        await asyncio.sleep(1)
         self.assertEqual(service.machine.current, 'three', 'now in the next state')
         self.assertEqual(service.context['age'], 13, 'Invoked')
    
@@ -70,6 +72,7 @@ class TestInvokeAsync(unittest.TestCase):
 
         service = interpret(machine, lambda : {})
         self.loop.run_until_complete(self.dummy)
+        await asyncio.sleep(1)
         self.assertEqual(service.context['age'], 2, 'Invoked immediately')
         self.assertEqual(service.machine.current, 'two', 'in the new state')    
     
@@ -184,7 +187,7 @@ class TestInvokeMachine(unittest.TestCase):
             'init': state(
                 immediate('waiting', action(lambda ctx: ctx['stuff'].append(1)))
             ),
-            'waiting': invoke(asyncio.sleep(50),
+            'waiting': invoke(asyncio.sleep(5),
                               transition('done' 'fin', 
                                          action(lambda ctx: ctx['stuff'].append(2)))
             ),
@@ -200,7 +203,7 @@ class TestInvokeMachine(unittest.TestCase):
         service = interpret(machine, lambda : {})
         service.send('next')
         
-        await asyncio.sleep(50)
+        await asyncio.sleep(5)
         
         self.assertListEqual(service.context['stuff'], [1,2])   
     

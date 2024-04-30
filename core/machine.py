@@ -5,19 +5,10 @@ class Debugger:
   _onEnter: Callable
   _create: Callable
   _send: Callable
-  
     
 d = Debugger()
-truthy = lambda : True
 empty = lambda : dict()
 identity: Callable = lambda *x: x[0]
-callBoth = lambda par, fn, self, args: par(self, args) and fn(self, args)
-callForward = lambda par, fn, self, args: fn(self, par(self, args[0], args[1] ), args[1])
-
-# def stack(fns, defFn, caller):
-#   res = defFn
-#   for fn in fns:
-#     res = caller(res, fn, self, args)
     
 def stackGuards(fns):
   def retFn(*args):
@@ -76,9 +67,6 @@ class Transition:
     self.reducers = reducers
 
 def makeTransition(Type, from_, to, *args):
-  # TODO: track peformace
-  # guards = stack([t.fn for t in filter(Guard, args)], truthy, callBoth)
-  # reducers = stack([t.fn for t in filter(Reducer, args)], identity, callForward)
   guards = stackGuards([t for t in filter(guard, args)])
   reducers = stackReducers([t for t in filter(reduce, args)])
   
