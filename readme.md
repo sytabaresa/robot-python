@@ -51,8 +51,8 @@ If only the [Apollo 11 assembler programmers](https://github.com/chrislgarry/Apo
 
 The API is nearly the same of the JS library, with some changes/gotchas:
 - JS objects are replaced with Python equivalents: 
-    - state definitions need to be dictionaries or objects with _ __getitem__ _ method
-    - events can be strings (equal as in the original library), objects with property _type_, dictionaries or objects with _ __getitem__ _ method and _type_ key
+    - state definitions need to be dictionaries or objects with `__getitem__` method
+    - events can be strings (equal as in the original library), objects with property _type_, dictionaries or objects with `__getitem__` method and _type_ key
     - context doesn't has restrictions.
 - Some helpers were implemented as classes, more robust in type checking and with exact API that JS functions
 - JS Promises are implemented with async/await Python feature
